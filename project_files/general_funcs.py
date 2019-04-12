@@ -69,9 +69,9 @@ class Data:
         s.df_valid = {}
         
         for city in s.cities:
-            s.df_train[city] = s.df[s.df['city']==city][:train_cut]
-            s.df_testt[city] = s.df[s.df['city']==city][:train_cut]
-            s.df_valid[city] = s.df[s.df['city']==city]
+            s.df_train[city] = s.df[s.df['city']==city][:train_cut].reset_index(drop=1)
+            s.df_testt[city] = s.df[s.df['city']==city][:train_cut].reset_index(drop=1)
+            s.df_valid[city] = s.df[s.df['city']==city].reset_index(drop=1)
         return 
     
     def unsplit(s):
