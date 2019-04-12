@@ -25,6 +25,9 @@ class Data:
         s._internal_trans_list  = []
         s._internal_kwargs_list = []
         
+        s._pred_reverse_trans_list  = []
+        s._pred_reverse_kwargs_list = []
+        
         return
     
     def read_data(s,directory):
@@ -80,24 +83,7 @@ class Data:
         ])
         return
         
-    def transform(s, trans_list, kwargs_list={}, direction='for'):
-        if type(trans_list)!=type([]):
-            trans_list = [trans_list]
-        if type(kwargs_list)!=type([]):
-            kwargs_list = [kwargs_list]
-            
-        s._internal_trans_list.extend(trans_list)
-        s._internal_kwargs_list.extend(kwargs_list)
-            
-        if type(kwargs_list)!=type(None) and len(kwargs_list)!=len(trans_list):
-            print('Error in options list')
-            raise 
-            
-        for trans,kwargs in zip(trans_list,kwargs_list):
-            trans(s,direction,**kwargs)
-        return 
-    
-    def inverse_transform(s, trans_list=None, kwargs_list={}):
+    def transform(s, trans_list, kwargs_list={}, direction='for', reversible_preds=0):
         '''
         The recommended way to use this function is with no arguments.
         This will automatically undo all applied functions in reverse order,
@@ -107,12 +93,31 @@ class Data:
         reversal may not work, and you will be left with an incorrectly transformed
         dataframe.
         '''
-        if type(trans_list)==type(None):
+        if type(trans_list)==type(None) and direction=='inv':
             trans_list  = s._internal_trans_list
             kwargs_list = s._internal_kwargs_list
-        s.transform(trans_list[::-1], kwargs_list[::-1], direction='inv')
-        s._internal_trans_list  = []
-        s._internal_kwargs_list = []
+            s.transform(trans_list[::-1], kwargs_list[::-1], direction='inv')
+            s._internal_trans_list  = []
+            s._internal_kwargs_list = []
+        
+        if type(trans_list)!=type([]):
+            trans_list = [trans_list]
+        if type(kwargs_list)!=type([]):
+            kwargs_list = [kwargs_list]
+        
+        if reversible_preds==0:
+            s._internal_trans_list.extend(trans_list)
+            s._internal_kwargs_list.extend(kwargs_list)
+        else:
+            s._pred_reverse_trans_list.extend(trans_list)
+            s._pred_reverse_kwargs_list.extend(kwargs_list)
+            
+        if type(kwargs_list)!=type(None) and len(kwargs_list)!=len(trans_list):
+            print('Error in options list')
+            raise 
+            
+        for trans,kwargs in zip(trans_list,kwargs_list):
+            trans(s,direction,**kwargs)
         return 
     
     def df_to_arr(s):
@@ -190,6 +195,7 @@ class Modelplus:
         or "full", to train on train+testt, to test on valid.
         '''
         s._check_loaded(data)
+        
         for city in s.cities:
             if mode.lower() in ['sub','s']:
                 s.models[city].fit(data.arr_X_train[city] , data.arr_y_train[city])
@@ -197,14 +203,22 @@ class Modelplus:
                 s.models[city].fit(data.arr_X_train_full[city] , data.arr_y_train_full[city])
         return
     
+    def undo_pred_transforms(s,data,preds):
+        _temp_preds = preds.copy()
+        for trans,kwargs in zip(data._pred_reverse_trans_list[::-1],data._pred_reverse_kwargs_list[::-1]):
+            _temp_preds = trans(data=data,directions='pr',preds=_temp_preds,**kwargs)
+        return _temp_preds
+    
     def predict(s,data,mode='test'):
         s._check_loaded(data)
         for city in s.cities:
             if mode.lower() in ['test','testt','t']:
                 s.preds_testt[city] = s.models[city].predict(data.arr_X_testt[city])
+                s.preds_testt[city] = s.undo_pred_transforms(data,s.preds_testt[city])
                 s.mae_testt_cities[city] = mean_absolute_error(data.arr_y_testt[city], s.preds_testt[city])
             elif mode.lower() in ['val','valid','v']:
                 s.preds_valid[city] = s.models[city].predict(data.arr_X_valid[city])
+                s.preds_valid[city] = s.undo_pred_transforms(data,s.preds_valid[city])
             else:
                 print('Error')
                 return
