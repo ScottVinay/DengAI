@@ -54,6 +54,7 @@ class Data:
         s.df.loc[(s.df['total_cases']>40),'cat_cases']=2
         
         s.df = s.df.fillna(method='ffill')
+        s._df_valid = s._df_valid.fillna(method='ffill')
         
         s.df_original = s.df.copy()
         return
@@ -71,7 +72,7 @@ class Data:
         for city in s.cities:
             s.df_train[city] = s.df[s.df['city']==city][:train_cut].reset_index(drop=1)
             s.df_testt[city] = s.df[s.df['city']==city][:train_cut].reset_index(drop=1)
-            s.df_valid[city] = s.df[s.df['city']==city].reset_index(drop=1)
+            s.df_valid[city] = s._df_valid[s._df_valid['city']==city].reset_index(drop=1)
         return 
     
     def unsplit(s):
@@ -143,18 +144,20 @@ class Data:
         s.arr_y_train_full = {}
         
         for city in s.cities:
-            X_cols = [c for c in s.df_train[city].columns if c not in ['total_cases', 'week_start_date', 'city'] ]
+            s.exclude = ['total_cases', 'week_start_date', 'city', 'time', 'cat_cases']
+            X_cols = [c for c in s.df_train[city].columns if c not in  s.exclude]
+            X_cols_valid = [c for c in s.df_valid[city].columns if c not in s.exclude ]
             
             s.arr_X_train[city] = s.df_train[city][X_cols].values
             s.arr_y_train[city] = s.df_train[city]['total_cases'].values
 
             s.arr_X_testt[city]  = s.df_testt[city][X_cols].values
             s.arr_y_testt[city]  = s.df_testt[city]['total_cases'].values
-
-            s.arr_X_valid[city] = s.df_train[city][X_cols].values
             
             s.arr_X_train_full[city] = np.concatenate([s.arr_X_train[city],s.arr_X_testt[city]],0)
             s.arr_y_train_full[city] = np.concatenate([s.arr_y_train[city],s.arr_y_testt[city]],0)
+            
+            s.arr_X_valid[city] = s.df_valid[city][X_cols_valid].values
         
         s.loaded_to_array = 1
         return
@@ -206,7 +209,7 @@ class Modelplus:
     def undo_pred_transforms(s,data,preds):
         _temp_preds = preds.copy()
         for trans,kwargs in zip(data._pred_reverse_trans_list[::-1],data._pred_reverse_kwargs_list[::-1]):
-            _temp_preds = trans(data=data,directions='pr',preds=_temp_preds,**kwargs)
+            _temp_preds = trans(data=data,direction='pr',preds=_temp_preds,**kwargs)
         return _temp_preds
     
     def predict(s,data,mode='test'):
