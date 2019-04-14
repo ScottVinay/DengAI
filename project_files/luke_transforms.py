@@ -3,6 +3,7 @@ def sqrtdist_labels(data,direction='for',preds=None):
     frwrd = ['f', 'for', 'forward']
     invrs =  ['i', 'inv', 'inverse']
     prds = ['p','pr','preds','predreverse','pred_reverse']
+    
     if direction not in [frwrd + invrs]:
         print("Invalid direction specified ... accepted keys: ")
         for i in [frwrd + invrs]: print(i)
