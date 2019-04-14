@@ -3,9 +3,9 @@ def sqrtdist_labels(data,direction='for',preds=None):
     frwrd = ['f', 'for', 'forward']
     invrs =  ['i', 'inv', 'inverse']
     prds = ['p','pr','preds','predreverse','pred_reverse']
-    
-    if direction not in [frwrd + invrse + prds]:
-        print("Invalid direction,")
+    if direction not in [frwrd + invrs]:
+        print("Invalid direction specified ... accepted keys: ")
+        for i in [frwrd + invrs]: print(i)
     
     if direction in frwrd:
         for city in data.cities:  
@@ -23,7 +23,7 @@ def sqrtdist_labels(data,direction='for',preds=None):
             data.df_testt[city].rename(columns = {'sqrt_total_cases':'total_cases'}, inplace = True)
         return 
     
-    if direction in prds:
+    if preds != None:
         outs = preds.copy()
         for city in data.cities:
             for i in range(len(outs)):
