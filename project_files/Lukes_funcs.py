@@ -9,16 +9,16 @@ def drop_columns(s, drp_lst = None,):
   
   if len(drp_lst) != 0:
     try:
-        s.drop(drop_list, axis=1,inplace=True)
-         
+        s.drop(drop_list, axis=1,inplace=True)        
     except(KeyError):
+      
           plural = 0
           for word in drp_lst:
             if word not in s.columns:
               plural = plural + 1
               print(word,", ", end="")
               
-          if plural ==0:
+          if plural == 2:
             print("is not a column name within dataframe, please remove it from the drop list")
           else:
             print("are not a column names within dataframe, please remove them from the drop list")
