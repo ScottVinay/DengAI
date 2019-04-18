@@ -14,21 +14,17 @@ def checkword(s,col_lst):
         
 def drop_columns(s, col_lst = None,):
   
-  
   " | --------------------------------------------------------------------------- | "
   " | This function is passed a dataframe s and a list of column names to drop.   | "
   " | It will alert the user if an invalid column key is passed and exit.         | "
   " | --------------------------------------------------------------------------- | "
   
-  
   if len(col_lst) != 0:
     try:
-        s.drop(col_lst, axis=1,inplace=True)
-         
+        s.drop(col_lst, axis=1,inplace=True)      
     except(KeyError):
       checkword(s,col_lst)
-      return
-         
+      return      
   else:
     print("Please provide a occupied list of columns to drop")
   print("Remaining columns:\n",s.columns.values)            
