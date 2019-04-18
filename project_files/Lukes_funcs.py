@@ -1,35 +1,43 @@
+def checkword(s,col_lst):
+ 
+  plural = 0
+  for word in col_lst:
+    if word not in s.columns:
+      plural = plural + 1
+      print(word,", ", end="")
+      if plural <2:
+        print("is not a column name within dataframe, please remove it from the input list")
+      else:
+        print("are not a column names within dataframe, please remove them from the input list")    
+        
+
+        
 def drop_columns(s, col_lst = None,):
+  
   
   " | --------------------------------------------------------------------------- | "
   " | This function is passed a dataframe s and a list of column names to drop.   | "
   " | It will alert the user if an invalid column key is passed and exit.         | "
   " | --------------------------------------------------------------------------- | "
-    
-  if len(col_lst) != 0:  
+  
+  
+  if len(col_lst) != 0:
     try:
-        s.drop(col_lst, axis=1,inplace=True)      
+        s.drop(col_lst, axis=1,inplace=True)
+         
     except(KeyError):
-          plural = 0
-          for word in col_lst:
-            if word not in s.columns:
-              plural = plural + 1
-              print(word,", ", end="")
-            
-          if plural <2:
-            print("is not a column name within dataframe, please remove it from the drop list")
-          else:
-            print("are not a column names within dataframe, please remove them from the drop list")        
+      checkword(s,col_lst)
+      return
+         
   else:
     print("Please provide a occupied list of columns to drop")
-  print("Remaining columns:\n",s.columns.values)    
-
+  print("Remaining columns:\n",s.columns.values)            
   
   
   
-  
-  
-
 def merge_columns(s, col_lst = None, operation = 'mean', remove_old = True, new_col_name = None ):
+  
+  from numpy import mean as npmean
   
   " | --------------------------------------------------------------------------- | "
   " | merge_columns is passed a dataframe s and a list of column names to merge   | "
@@ -37,30 +45,21 @@ def merge_columns(s, col_lst = None, operation = 'mean', remove_old = True, new_
   " | columns must represent numerical data such that they can be fused           | "
   " | accoringly.                                                                 | "
   " | --------------------------------------------------------------------------- | "
-  
-  from numpy import mean as npmean
-  
+   
   operation = operation.lower()
   if new_col_name == None:
     new_col_name = operation +"_"+ ''.join(col_lst)
+  
   case_mean = ['mean','avg']
   nmdtype = ['float64','float32','int64','int32']
- 
-  " | --- B O R I N G --- A S S --- D A T A --- C H E C K S --- | "
+
+  
+  # | --- B O R I N G --- A S S --- D A T A --- C H E C K S --- | "
   
   try:
     s[col_lst]
   except(KeyError):
-    plural = 0
-    for word in col_lst:
-      if word not in s.columns:
-        plural = plural + 1
-        print(word,", ", end="")
-              
-        if plural <2:
-           print("is not a column name within dataframe, please remove it from the input list")
-        else:
-           print("are not a column names within dataframe, please remove them from the input list")    
+    checkword(s,col_lst)
     return
   
   if len(col_lst) == 0:
@@ -75,15 +74,15 @@ def merge_columns(s, col_lst = None, operation = 'mean', remove_old = True, new_
       print("Column: '",a,"' is not of numerical type, cannot perform arithmetic.")
       return
     
-  " | --- O P E R A T I O N S --- | "
+  # | --- O P E R A T I O N S --- | "
   
   if operation in case_mean:
     print("Mean merging: ",col_lst)
     s[new_col_name] = npmean(s[col_lst],axis =1)
   
-  # feel free to add more here ...
-
-  " | --- C L E A N --- U P --- | "
+  
+  
+  # | --- C L E A N --- U P --- | "
   
   if remove_old == True:
     for a in col_lst:
