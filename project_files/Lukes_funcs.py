@@ -1,4 +1,4 @@
-    def drop_columns(s, col_lst = None,):
+def drop_columns(s, col_lst = None,):
   
   " | --------------------------------------------------------------------------- | "
   " | This function is passed a dataframe s and a list of column names to drop.   | "
